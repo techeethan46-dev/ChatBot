@@ -1,14 +1,13 @@
-# Connected Discord-GitHub | Discord: Ethan | Roblox: EthanDev
+# Connected Discord-GitHub | Discord: AbyssalNoob1 | Roblox: AbyssalNoob1 
 
 import discord
 from discord.ext import commands
-from discord import app_commands
+import asyncio
 import os
-import google.generativeai as genai
+from google import genai
 
-# init gemini
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-1.5-flash")
+# will crash if key isn't set, which is fine
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -53,8 +52,12 @@ async def on_message(msg):
 
         async with msg.channel.typing():
             try:
-                # using async so we dont block the gateway heartbeat
-                res = await model.generate_content_async(prompt)
+                # using async thread so we dont block gateway heartbeat
+                res = await asyncio.to_thread(
+                    client.models.generate_content,
+                    model="gemini-2.5-flash",
+                    contents=prompt,
+                )
                 ans = res.text
                 
                 history[uid].append(f"Bot: {ans}")
@@ -69,7 +72,7 @@ async def on_message(msg):
                 await msg.reply("error generating response")
                 # history[uid].pop() # remove failed prompt from memory
 
-    await bot.process_commands(msg)
+        await bot.process_commands(msg)
 
 
 @bot.tree.command(name="clear", description="clears your ai chat history")
@@ -84,4 +87,3 @@ async def clear_cmd(interaction: discord.Interaction):
 
 # will crash if token isnt set, which is fine
 bot.run(os.environ.get("BOT_TOKEN"))
-
