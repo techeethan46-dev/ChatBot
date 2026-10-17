@@ -10,8 +10,9 @@ import google.generativeai as genai
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 model = genai.GenerativeModel("gemini-1.5-flash")
 
-bot = commands.Bot(command_prefix="!", intents=discord.Intents.default())
-bot.intents.message_content = True
+intents = discord.Intents.default()
+intents.message_content = True
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 history = {}
 
